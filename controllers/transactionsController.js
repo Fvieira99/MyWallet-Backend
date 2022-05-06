@@ -4,10 +4,7 @@ import { stripHtml } from "string-strip-html";
 import dayjs from "dayjs";
 
 export async function getTransactions(req, res) {
-	const { authorization } = req.headers;
-	const token = authorization?.replace("Bearer", "").trim();
-
-	if (!token) return res.sendStatus(404);
+	const token = res.locals.token;
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
@@ -17,11 +14,14 @@ export async function getTransactions(req, res) {
 			.collection("transactions")
 			.find({ userId: session.userId })
 			.toArray();
-
+		let balance = 0;
 		if (transactions.length > 0) {
-			transactions.forEach((transaction) => delete transaction.userId);
+			transactions.forEach((transaction) => {
+				balance += transaction.value;
+				delete transaction.userId;
+			});
 		}
-		res.send(transactions);
+		res.send({ transactions, balance });
 	} catch (error) {
 		res.sendStatus(500);
 	}
@@ -29,27 +29,18 @@ export async function getTransactions(req, res) {
 
 export async function postNewEntry(req, res) {
 	const { value, description } = req.body;
-	const { authorization } = req.headers;
-	const token = authorization?.replace("Bearer", "").trim();
-
-	if (!token) return res.sendStatus(404);
+	const token = res.locals.token;
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
 		if (!session) return res.status(404).send("Sessão não encontrada.");
 
-		const user = await database
-			.collection("users")
-			.findOne({ _id: new ObjectId(session.userId) });
-
-		if (!user) return res.status(404).send("Usuario não encontrado");
-
 		await database.collection("transactions").insertOne({
-			value: parseFloat(value).toFixed(2),
+			value: parseFloat(value) * 1,
 			type: "entry",
 			date: dayjs().locale("pt-br").format("DD/MM"),
-			description: stripHtml(description).trim(),
-			userId: user._id,
+			description: stripHtml(description).result.trim(),
+			userId: session.userId,
 		});
 		res.sendStatus(200);
 	} catch (error) {
@@ -60,27 +51,18 @@ export async function postNewEntry(req, res) {
 
 export async function postNewExit(req, res) {
 	const { value, description } = req.body;
-	const { authorization } = req.headers;
-	const token = authorization?.replace("Bearer", "").trim();
-
-	if (!token) return res.sendStatus(404);
+	const token = res.locals.token;
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
 		if (!session) return res.status(404).send("Sessão não encontrada.");
 
-		const user = await database
-			.collection("users")
-			.findOne({ _id: new ObjectId(session.userId) });
-
-		if (!user) return res.status(404).send("Usuario não encontrado");
-
 		await database.collection("transactions").insertOne({
-			value: parseFloat(value).toFixed(2) * -1,
+			value: parseFloat(value) * -1,
 			type: "exit",
 			date: dayjs().locale("pt-br").format("DD/MM"),
-			description: stripHtml(description).trim(),
-			userId: user._id,
+			description: stripHtml(description).result.trim(),
+			userId: session.userId,
 		});
 		res.sendStatus(200);
 	} catch (error) {

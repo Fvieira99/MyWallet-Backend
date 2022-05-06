@@ -4,28 +4,17 @@ import cors from "cors";
 import dotenv from "dotenv";
 import chalk from "chalk";
 //Modules
-import database from "./db.js";
-import { signUp, signIn } from "./controllers/authController.js";
-import {
-	getTransactions,
-	postNewEntry,
-	postNewExit,
-} from "./controllers/transactionsController.js";
+import authRouter from "./routes/authRouter.js";
+import transactionsRouter from "./routes/transactionsRouter.js";
+
 dotenv.config();
 
 const server = express();
 server.use(json());
 server.use(cors());
 
-server.post("/signin", signIn);
-
-server.post("/signup", signUp);
-
-server.get("/transactions", getTransactions);
-
-server.post("/transaction/entry", postNewEntry);
-
-server.post("/transaction/exit", postNewExit);
+server.use(authRouter);
+server.use(transactionsRouter);
 
 const port = process.env.PORT;
 server.listen(port, () =>
