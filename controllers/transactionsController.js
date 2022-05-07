@@ -8,7 +8,6 @@ export async function getTransactions(req, res) {
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
-		if (!session) return res.status(404).send("Sessão não encontrada");
 
 		const transactions = await database
 			.collection("transactions")
@@ -19,6 +18,7 @@ export async function getTransactions(req, res) {
 			transactions.forEach((transaction) => {
 				balance += transaction.value;
 				delete transaction.userId;
+				delete transaction._id;
 			});
 		}
 		res.send({ transactions, balance });
@@ -33,7 +33,6 @@ export async function postNewEntry(req, res) {
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
-		if (!session) return res.status(404).send("Sessão não encontrada.");
 
 		await database.collection("transactions").insertOne({
 			value: parseFloat(value) * 1,
@@ -55,7 +54,6 @@ export async function postNewExit(req, res) {
 
 	try {
 		const session = await database.collection("sessions").findOne({ token });
-		if (!session) return res.status(404).send("Sessão não encontrada.");
 
 		await database.collection("transactions").insertOne({
 			value: parseFloat(value) * -1,

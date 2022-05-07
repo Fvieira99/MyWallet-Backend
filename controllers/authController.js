@@ -53,3 +53,15 @@ export async function signIn(req, res) {
 		res.sendStatus(500);
 	}
 }
+
+export async function logout(req, res) {
+	const token = res.locals.token;
+
+	try {
+		await database.collection("sessions").findOneAndDelete({ token });
+
+		res.status(200).send("Logout realizado com sucesso");
+	} catch (error) {
+		res.sendStatus(500);
+	}
+}
