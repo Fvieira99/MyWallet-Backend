@@ -16,7 +16,7 @@ server.use(cors());
 server.use(authRouter);
 server.use(transactionsRouter);
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 server.listen(port, () =>
 	console.log(chalk.green.bold(`Servidor funcionando na porta ${port}`))
 );
