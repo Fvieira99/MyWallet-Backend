@@ -4,6 +4,10 @@
 
 Here's the server side of MyWallet app. 
 
+## Built With
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+
 ## How to Run
 
 1. Clone this repository
